@@ -1,0 +1,103 @@
+Q1:
+The files that are created are BSTInt.o, BSTNodeInt.o, testVST.o, and bst
+
+
+Q2:
+BSTInt.cpp: In function 'bool insert(int)':
+BSTInt.cpp:25:8: error: 'root' was not declared in this scope
+   if (!root) {
+        ^
+BSTInt.cpp:27:7: error: 'isize' was not declared in this scope
+     ++isize;
+       ^
+BSTInt.cpp:31:22: error: 'root' was not declared in this scope
+   BSTNodeInt* curr = root;
+                      ^
+BSTInt.cpp:56:5: error: 'isize' was not declared in this scope
+   ++isize;
+
+By removing BSTInt::, we are no longer within the scope of BSTInt and therfore
+don't have access to root and isize which are members of BSTInt. This is not
+a valid implementation of the insert(int item) method found in BSTInt.h without
+the BSTInt::.
+
+
+Q3:
+The bug was in the insert method, where it would not detect duplicate items, and
+would often replace the left or right child rather than adding another child
+further down the tree.
+
+
+Q4:
+I first added duplicate items to the vector in testBST and noticed that the size
+still changed with the duplicates. Then I looked at BSTInt and saw that it
+didn't actually check if the current node's data had the same value as the item
+being added, so I fixed that. I was still having issues though, so I stepped
+through the program line by line using gdb to find that often times it was
+copying over left or right child nodes rather than adding new ones. So I then
+went back to the insert method and made sure it moved to the correct node before
+it attempted to insert anything. I then added several items to the test vector
+in testBST that would all be to the right of eachother (100,101,102,103,104) and
+made sure it worked, just to test that edge case as well. 
+
+
+Q5:
+BSTInt.h passes the value for its insert method, while BST.hpp passes
+a reference. Since BSTInt only takes integers, it is more straightforward and
+simple to just pass the value you want to add to the tree. You could pass the
+reference, but that would be making things needlessly difficult. For BST,
+because it is a generic implementation of a binary search tree that takes any
+data type, we should not give any specific type of value that the method should
+expect. Since we have no idea what kind of data is going to be inserted, it's 
+best to just pass a reference to the data for now.
+
+Q6:
+Sorted produces taller trees
+
+Q7:
+For sorted input, a tree of height N should be expected, since each node you
+insert will always be the left child of the last node you inserted if it is
+sorted decreasingly, or the right child if it is sorted increasingly. This
+basically creates a long line of nodes with no splits, so the height is N. 
+
+For unsorted input, if we assume that the input is completely random then we can
+expect an average height of log N. This is because each node that is inserted
+has an equal chance of becoming a left or right child at each level of the tree,
+and so we should get a relatively balanced binary tree for any number of nodes.
+Each level holds holds twice as many nodes as the previous level in a balanced
+binary tree, and so we can calculate the height of the tree by taking the log
+base 2 on the total number of nodes.
+
+I knew this from previous classes so I didn't need to do any extra research, but
+here is a good post on stackexchange that rigorously proves the above extimates:
+https://cs.stackexchange.com/questions/6342/
+proof-that-a-randomly-built-binary-search-tree-has-logarithmic-height
+
+I tested my estimates with 128, 2048, and 8096 actors along with the default
+11794 actors.
+
+128
+Sorted Estimate Height:127
+Sorted Actual Height:127
+Unsorted Estimate Height:7
+Unsorted Actual Height:14
+2048
+Sorted Estimate Height:2047
+Sorted Actual Height:2047
+Unsorted Estimate Height:11
+Unsorted Actual Height:25
+8192
+Sorted Estimate Height:8191
+Sorted Actual Height:8191
+Unsorted Estimate Height:13
+Unsorted Actual Height:30
+11794
+Sorted Estimate Height:11793
+Sorted Actual Height:1173
+Unsorted Estimate Height:14
+Unsorted Actual Height:32
+
+So it looks like the actual unsorted height is a bit more than double my
+estimate in each case. This is probably due to the fact that names are not truly
+randomly distributed, with certain names and letters being heavily favored. That
+creates a tree that is not totally balanced even with seemingly random input.
